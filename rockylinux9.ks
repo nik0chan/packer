@@ -13,7 +13,7 @@
 # ! IMPORTANT ! 
 # -------------
 # You have to set ssh public key (see key section below) and own private key configured on packer directory to deploy 
-#
+# Set your network configuration below! 
 
 # Install repo
 repo --name="Base" --baseurl="https://download.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os"
