@@ -1,0 +1,72 @@
+{
+    "_comment": "Launch syntax: packer build -var 'vcenter_user=<username>' -var 'vcenter_password=<password>' rockylinux.json",
+    "variables": {
+        
+      "version": "9.3_1",
+      "vcenter_server": "", 
+      "vcenter_user": "", 
+      "vcenter_password": "",
+      "vcenter_datacenter": "", 
+      "vcenter_cluster": "",
+      "vcenter_datastore": "",
+      "http_fqdn": "",
+      "http_path": "",
+      "template_ip": "", 
+      "template_mask": "", 
+      "template_gateway": "",
+      "template_dns": "",
+      "template_network": "",
+      "template_ISO": ""
+    },
+    "sensitive-variables": ["vcenter_password"],
+    "provisioners": [
+      {
+        "type": "shell",
+        "expect_disconnect": true,
+        "execute_command": "bash '{{.Path}}'",
+        "script": "{{template_dir}}/scripts/requirements.sh"
+      }
+    ],
+    "builders": [
+      {
+        "type": "vsphere-iso",
+        "CPUs": 2,
+        "CPU_hot_plug": true,
+        "RAM": 2048,
+        "RAM_hot_plug": true,
+        "disk_controller_type": "pvscsi",
+        "guest_os_type": "centos8_64Guest",
+        "iso_paths": [ "{{ user `template_ISO` }}"],
+        "network_adapters": [
+          {
+            "network_card": "vmxnet3",
+            "network": "{{ user `template_network` }}"
+          }
+        ],
+        "storage": [
+          {
+            "disk_size": 40000,
+            "disk_thin_provisioned": true
+          }
+        ],
+        "boot_command": [
+        "<up><tab> inst.text ip={{ user `template_ip` }}::{{ user `template_gateway` }}:{{ user `template_mask` }}:template:ens192:none nameserver={{ user `template_dns` }} inst.repo=cdrom inst.ks=http://{{ user `http_fqdn` }}/{{ user `http_path` }}<enter><wait>"
+        ],
+        "ssh_username": "root",
+        "ssh_private_key_file" : "ssh/id_rsa",
+        "shutdown_command": "/sbin/halt -h -p",
+        "insecure_connection": "true",
+        "username": "{{ user `vcenter_user` }}",
+        "password": "{{ user `vcenter_password` }}",
+        "vcenter_server": "{{ user `vcenter_server` }}",
+        "datacenter": "{{ user `vcenter_datacenter` }}",
+        "cluster": "{{ user `vcenter_cluster` }}",	  
+        "datastore": "{{ user `vcenter_datastore` }}",
+        "vm_name": "template-rockylinux-{{ user `version` }}",
+        "folder": "Templates",
+        "notes": "Template RockyLinux version {{ user `version` }}",
+        "convert_to_template": true,
+        "create_snapshot": false	
+      }
+    ]
+  }
